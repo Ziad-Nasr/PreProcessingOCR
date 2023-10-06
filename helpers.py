@@ -29,18 +29,18 @@ def load_images_and_ground_truth(image_folder, ground_truth_folder):
 
 
 # example usage
-data = "old_books_2"
-labels_path = "old_books_gt"
-images, labels = load_images_and_ground_truth(data, labels_path)
+# data = "old_books"
+# labels_path = "old_books_gt"
+# images, labels = load_images_and_ground_truth(data, labels_path)
 
-# # display image using opencv (bad displaying in that case)
+# display image using opencv (bad displaying in that case)
 # im = cv2.resize(images[1], (960, 540))     # Resize image
-# cv2.imshow("image",im)
+# cv2.imshow("image", im)
 # cv2.waitKey(0)
 # cv2.destroyAllWindows()
 
 # displaying image using matplotlib
-plt.imshow(images[1])
-plt.show()
+# plt.imshow(images[1])
+# plt.show()
 
-print(labels[1])
+# print(labels[1])
