@@ -14,7 +14,9 @@ def OCR(images, language):
     return results
 
 
-def skewImageLeft(images):
+def skewImageLeft(images, language):
+    # Images ba3dha Kol el skews ?
+    # Walla Skew wa7ed le kol el images then iterate ?
     for image in images:
         Size = image.shape
         maximumVerticalSkew = Size[0]/3
@@ -35,12 +37,13 @@ def skewImageLeft(images):
             plt.show()
             verticalSkew += 75
             horizontalSkew += 75
-            # resultsPostSkewLeft = OCR(images, language)
-    # return resultsPostSkewLeft
+            resultsSinglePointSkew = OCR(images, language)
+    return resultsSinglePointSkew
 
 
-def singlePointSkew(images):
+def singlePointSkew(images, language):
     for image in images:
+        results = []
         Size = image.shape
         maximumVerticalSkew = Size[0]/3
         maximumHorizontalSkew = Size[1]/3
@@ -60,20 +63,28 @@ def singlePointSkew(images):
             plt.show()
             verticalSkew += 75
             horizontalSkew += 75
-            # resultsPostSkewLeft = OCR(images, language)
-    # return resultsPostSkewLeft
+            results.append(OCR(images, language))
+
+    return results
 
 
 def skewImage(images, labels, language):
     # Initial OCR
     # resultsPreSkew = OCR(images, language)
     # Skew the images from 2 points to the left
-    resultsSkewImageLeft = skewImageLeft(images)
-    # resultsPostSkewLeft = OCR(images, language)
+    resultsSkewImageLeft = skewImageLeft(images, language)
     # Skew the images from 1 point
-    resultsSinglePointSkew = singlePointSkew(images)
+    resultsSinglePointSkew = singlePointSkew(images, language)
 
     # Compare the results
+
+
+def scalingImage(images, labels, landuage):
+    # Initial OCR
+    # resultsPreScale = OCR(images, language)
+    # Scale the images
+    for scale in range(1, 20, 2):
+        pass
 
 
 if __name__ == "__main__":
@@ -84,3 +95,4 @@ if __name__ == "__main__":
     #     "yarmouk/01_col", "ground_truth/yarmouk_gt")
 
     skewImage(englishImages, englishLabels, "ara")
+    scalingImage(englishImages, englishLabels, "ara")
