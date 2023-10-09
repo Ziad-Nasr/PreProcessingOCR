@@ -57,10 +57,14 @@ def skewImageToOCR(images, labels, language, singlePointFlag=False):
             horizontalSkew += Size[1]/35
         OCRResults.append(imageSkew)
         # print(OCRResults)
-        OCRResults_Adjusted = helpers.AdjustOCRResults(OCRResults)
+    OCRResults_Adjusted = helpers.AdjustOCRResults(OCRResults)
+    print(len(OCRResults_Adjusted))
+    print(len(OCRResults_Adjusted[0]))
+    for i in range(len(OCRResults_Adjusted)-1):
         accuracies.append(calculate_accuracy(
-            helpers.flatten(OCRResults_Adjusted), labels))
-    print(accuracies)
+            helpers.flatten(OCRResults_Adjusted[i]), labels))
+
+    # print(accuracies)
     return accuracies
 
 

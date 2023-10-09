@@ -30,11 +30,9 @@ def load_images_and_ground_truth(image_folder, ground_truth_folder):
 
 def AdjustOCRResults(OCRResults):
     OCRResults_Adjusted = []
-    for i in range(len(OCRResults)):
-        oneDimensionalArray = []
-        for j in range(len(OCRResults[i])):
-            oneDimensionalArray.append(OCRResults[i][j])
-        OCRResults_Adjusted.append(oneDimensionalArray)
+    OCRResults_Adjusted = [[OCRResults[j][i]
+                            for j in range(len(OCRResults))] for i in range(len(OCRResults[0]))]
+    print(OCRResults_Adjusted)
     return OCRResults_Adjusted
 
 
