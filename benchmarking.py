@@ -6,80 +6,62 @@ import os
 import numpy as np
 import nltk
 
+Skewing_Value = ["Size/35", "2(Size)/35", "3(Size)/35", "4(Size)/35", "5(Size)/35",
+                 "6(Size)/35", "7(Size)/35", "8(Size)/35", "9(Size)/35", "10(Size)/35", "11(Size)/35",]
 
-def OCR(image, language):
-    OCRText = pytesseract.image_to_string(image, lang=language)
+
+def OCR(image, language, singleImage=False):
+    if (singleImage == True):
+        OCRText = pytesseract.image_to_string(image, lang=language)
+    else:
+        OCRText = []
+        for i in range(len(image)):
+            OCRText.append(pytesseract.image_to_string(
+                image[i], lang=language))
     return OCRText
 
 
-def skewImageToOCR(images, language, singlePointFlag=False):
-    # Images ba3dha Kol el skews ?
-    # Walla Skew wa7ed le kol el images then iterate ?
+def skewImageToOCR(images, labels, language, singlePointFlag=False):
     OCRResults = []
+    accuracies = []
+    # y-axis = Vertical Axis , x-axis = Horizontal Axis
     for image in images:
-        imageSkew = []
         Size = image.shape
+        # y_axis = Size[0]
+        # x_axis = Size[1]
+        imageSkew = []
         maximumVerticalSkew = Size[0]/3
         maximumHorizontalSkew = Size[1]/3
-        # y-axis = Vertical Axis , x-axis = Horizontal Axis
         verticalSkew = Size[0]/35
         horizontalSkew = Size[1]/35
         while verticalSkew <= maximumVerticalSkew and horizontalSkew <= maximumHorizontalSkew:
-            # skewingValue = []
             source = np.float32(
                 [[0, Size[0]], [Size[1], Size[0]], [Size[1], 0], [0, 0]])
             if (singlePointFlag == True):
                 destination = np.float32(
                     [[0, Size[0]],
-                     [Size[1], Size[0]], [Size[1], 0], [horizontalSkew, verticalSkew]])
+                        [Size[1], Size[0]], [Size[1], 0], [horizontalSkew, verticalSkew]])
             else:
                 destination = np.float32(
                     [[horizontalSkew, Size[0]-verticalSkew],
                         [Size[1], Size[0]], [Size[1], 0], [horizontalSkew, verticalSkew]])
-            skewingKernel = cv2.getPerspectiveTransform(source, destination)
+            skewingKernel = cv2.getPerspectiveTransform(
+                source, destination)
             skewedImage = cv2.warpPerspective(
-                image, skewingKernel, (Size[1], Size[0]
-                                       ), borderValue=(255, 255, 255))
-            if (verticalSkew == 300):
-                plt.imshow(skewedImage)
-                plt.show()
-            imageSkew.append(OCR(skewedImage, language))
+                image, skewingKernel, (Size[1], Size[0]), borderValue=(255, 255, 255))
+            # plt.imshow(skewedImage)
+            # plt.show()
+            imageSkew.append(OCR(skewedImage, language, singleImage=True))
             # skewingValue.append([horizontalSkew, verticalSkew])
             verticalSkew += Size[0]/35
             horizontalSkew += Size[1]/35
         OCRResults.append(imageSkew)
-    return OCRResults
-
-
-def singlePointSkew(images, language):
-    for image in images:
-        OCRResults = []
-        Size = image.shape
-        maximumVerticalSkew = Size[0]/3
-        maximumHorizontalSkew = Size[1]/3
-        # y-axis = Vertical Axis , x-axis = Horizontal Axis
-        verticalSkew = Size[0]/20
-        horizontalSkew = Size[1]/20
-        while verticalSkew <= maximumVerticalSkew and horizontalSkew <= maximumHorizontalSkew:
-            imageSkew = []
-            skewingValue = []
-            source = np.float32(
-                [[0, Size[0]], [Size[1], Size[0]], [Size[1], 0], [0, 0]])
-            destination = np.float32(
-                [[0, Size[0]],
-                    [Size[1], Size[0]], [Size[1], 0], [horizontalSkew, verticalSkew]])
-            skewingKernel = cv2.getPerspectiveTransform(source, destination)
-            skewedImage = cv2.warpPerspective(
-                image, skewingKernel, (Size[1], Size[0]
-                                       ), borderValue=(255, 255, 255))
-            plt.imshow(skewedImage)
-            plt.show()
-            imageSkew.append(OCR(skewedImage, language))
-            # skewingValue.append([horizontalSkew, verticalSkew])
-            verticalSkew += Size[0]/15
-            horizontalSkew += Size[1]/15
-        OCRResults.append(imageSkew)
-    return OCRResults
+        # print(OCRResults)
+        OCRResults_Adjusted = helpers.AdjustOCRResults(OCRResults)
+        accuracies.append(calculate_accuracy(
+            helpers.flatten(OCRResults_Adjusted), labels))
+    print(accuracies)
+    return accuracies
 
 
 def calculate_accuracy(ocr_results, ground_truth):
@@ -108,12 +90,21 @@ def calculate_accuracy(ocr_results, ground_truth):
 
 def skewImage(images, labels, language):
     # Initial OCR
-    resultsPreSkew = OCR(images, language)
-    accuracies = [calculate_accuracy(resultsPreSkew, labels)]
+    # accuracies.append(accuracyPreSkew)
     # Skew the images from 2 points to the left
-    resultsSkewImageLeft = skewImageToOCR(images, language, False)
-    accuracies.append(calculate_accuracy(resultsSkewImageLeft, labels))
-    
+    accuracies = skewImageToOCR(
+        images, labels, language, False)
+    resultsPreSkew = OCR(images, language)
+    accuracyPreSkew = calculate_accuracy(resultsPreSkew, labels)
+    accuracies.insert(0, accuracyPreSkew)
+    # accuracies = np.array(accuracies)
+    # accuracies.flatten()
+    print(accuracies)
+    plt.bar(Skewing_Value, accuracies, color='blue')
+    plt.xlabel("Skewing Value")
+    plt.ylabel("Accuracy")
+    plt.title(f"Accuracy for Skewing Images by {language} Language")
+    plt.show()
     # Skew the images from 1 point
     # resultsSinglePointSkew = skewImage(
     #     images[2], language=language, singlePointFlag=True)
@@ -121,12 +112,27 @@ def skewImage(images, labels, language):
     # Compare the results
 
 
-def scalingImage(images, labels, landuage):
+def scalingImage(images, labels, language):
     # Initial OCR
-    # resultsPreScale = OCR(images, language)
+    resultsPreScale = OCR(images, language)
+    accuracies = [calculate_accuracy(resultsPreScale, labels)]
     # Scale the images
+    scaler = [0]
     for scale in range(1, 20, 2):
-        pass
+        scaler.append(scale)
+        scaled_images = []
+        for image in images:
+            size = image.shape
+            scaled_image = cv2.resize(image, (scale*size[1], scale*size[0]))
+            scaled_images.append(scaled_image)
+        results = OCR(scaled_images, language)
+        accuracies.append(calculate_accuracy(results, labels))
+        print(calculate_accuracy(results, labels))
+    plt.bar(scaler, accuracies, color='blue')
+    plt.xlabel("Scaling Value")
+    plt.ylabel("Accuracy")
+    plt.title(f"Accuracy for Skewing Images by {language} Language")
+    plt.show()
 
 
 if __name__ == "__main__":
@@ -136,5 +142,8 @@ if __name__ == "__main__":
     # arabicImages, arabicLabels = helpers.load_images_and_ground_truth(
     #     "yarmouk/01_col", "ground_truth/yarmouk_gt")
 
-    skewImage(englishImages, englishLabels, "eng")
-    # scalingImage(englishImages, englishLabels, "ara")
+    skewImage(englishImages, englishLabels[:2], "eng")
+    # skewImage(arabicImages, arabicLabels, "ara")
+
+    # scalingImage(englishImages, englishLabels[:2], "eng")
+    # scalingImage(arabicImages, arabicLabels, "ara")

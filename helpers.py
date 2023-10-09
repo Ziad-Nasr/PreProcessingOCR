@@ -28,6 +28,19 @@ def load_images_and_ground_truth(image_folder, ground_truth_folder):
     return images, ground_truth
 
 
+def AdjustOCRResults(OCRResults):
+    OCRResults_Adjusted = []
+    for i in range(len(OCRResults)):
+        oneDimensionalArray = []
+        for j in range(len(OCRResults[i])):
+            oneDimensionalArray.append(OCRResults[i][j])
+        OCRResults_Adjusted.append(oneDimensionalArray)
+    return OCRResults_Adjusted
+
+
+def flatten(l):
+    return [item for sublist in l for item in sublist]
+
 # example usage
 # data = "old_books"
 # labels_path = "old_books_gt"
