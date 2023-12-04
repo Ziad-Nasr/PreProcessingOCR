@@ -51,12 +51,15 @@ def skewImageToOCR(images, labels, language, singlePointFlag=False):
                 image, skewingKernel, (Size[1], Size[0]), borderValue=(255, 255, 255))
             # plt.imshow(skewedImage)
             # plt.show()
+            print("OCR'ing")
             imageSkew.append(OCR(skewedImage, language, singleImage=True))
             # skewingValue.append([horizontalSkew, verticalSkew])
             verticalSkew += Size[0]/35
             horizontalSkew += Size[1]/35
+        print("Done")
         OCRResults.append(imageSkew)
-        # print(OCRResults)
+        # print(OCRResults[0][3])
+        print(OCRResults[0][4])
     OCRResults_Adjusted = helpers.AdjustOCRResults(OCRResults)
     print(len(OCRResults_Adjusted))
     print(len(OCRResults_Adjusted[0]))
@@ -97,7 +100,7 @@ def skewImage(images, labels, language):
     # accuracies.append(accuracyPreSkew)
     # Skew the images from 2 points to the left
     accuracies = skewImageToOCR(
-        images, labels, language, False)
+        images[:25], labels, language, False)
     resultsPreSkew = OCR(images, language)
     accuracyPreSkew = calculate_accuracy(resultsPreSkew, labels)
     accuracies.insert(0, accuracyPreSkew)
@@ -118,11 +121,14 @@ def skewImage(images, labels, language):
 
 def scalingImage(images, labels, language):
     # Initial OCR
+    print("Scaling")
     resultsPreScale = OCR(images, language)
+    print("OCR'ing")
     accuracies = [calculate_accuracy(resultsPreScale, labels)]
     # Scale the images
     scaler = [0]
-    for scale in range(1, 20, 2):
+    for scale in range(2, 6, 2):
+        print(scale)
         scaler.append(scale)
         scaled_images = []
         for image in images:
@@ -130,24 +136,25 @@ def scalingImage(images, labels, language):
             scaled_image = cv2.resize(image, (scale*size[1], scale*size[0]))
             scaled_images.append(scaled_image)
         results = OCR(scaled_images, language)
+        print("OCR'ing")
         accuracies.append(calculate_accuracy(results, labels))
         print(calculate_accuracy(results, labels))
     plt.bar(scaler, accuracies, color='blue')
     plt.xlabel("Scaling Value")
     plt.ylabel("Accuracy")
-    plt.title(f"Accuracy for Skewing Images by {language} Language")
+    plt.title(f"Accuracy for Scaling Images by {language} Language")
     plt.show()
 
 
 if __name__ == "__main__":
     englishImages, englishLabels = helpers.load_images_and_ground_truth(
-        "Testing", "ground_truth/old_books_gt")
+        "Tester", "ground_truth/old_books_gt")
 
     # arabicImages, arabicLabels = helpers.load_images_and_ground_truth(
-    #     "yarmouk/01_col", "ground_truth/yarmouk_gt")
+    #     "Testing", "ground_truth/yarmouk_gt")
 
-    skewImage(englishImages, englishLabels[:2], "eng")
-    # skewImage(arabicImages, arabicLabels, "ara")
+    skewImage(englishImages, englishLabels[:25], "eng")
+    # skewImage(arabicImages, arabicLabels[:17], "ara")
 
-    # scalingImage(englishImages, englishLabels[:2], "eng")
+    # scalingImage(englishImages, englishLabels[:15], "eng")
     # scalingImage(arabicImages, arabicLabels, "ara")

@@ -8,7 +8,7 @@ def load_images_and_ground_truth(image_folder, ground_truth_folder):
     image_files = os.listdir(image_folder)
     ground_truth_files = os.listdir(ground_truth_folder)
 
-    images = []
+    images = [] 
     ground_truth = []
 
     for i in range(len(image_files)):
@@ -25,7 +25,7 @@ def load_images_and_ground_truth(image_folder, ground_truth_folder):
         image = cv2.imread(image_path)
         images.append(image)
 
-    return images, ground_truth
+    return images, ground_truth , image_files, ground_truth_files
 
 
 def AdjustOCRResults(OCRResults):
