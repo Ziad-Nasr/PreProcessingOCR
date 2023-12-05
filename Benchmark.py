@@ -6,6 +6,7 @@ import numpy as np
 import nltk
 import csv
 import helpers
+import LineToWord
 # from craft_text_detector import (
 #     Craft, read_image, 
 #     load_craftnet_model, 
@@ -17,6 +18,7 @@ import helpers
 def acc(ocr_result, grt):
     ocr_words = nltk.word_tokenize(ocr_result.strip())
     gt_words = nltk.word_tokenize(grt.strip())
+    return ocr_words
 
     # Calculate the Levenshtein distance (edit distance) between the recognized words and ground truth words
     distance = nltk.edit_distance(ocr_words, gt_words)
@@ -28,7 +30,7 @@ def acc(ocr_result, grt):
     return 1 - wer
 
 def ocring(image,grt):
-    ocr = pytesseract.image_to_boxes(image, lang="ara")
+    ocr = pytesseract.image_to_string(image, lang="ara")
 
     # accuracy = acc(ocr, grt)
     # print(accuracy)
@@ -80,11 +82,10 @@ def noise_removal(images):
         resized_images.append(cv2.fastNlMeansDenoisingColored(images[singleImage], None, 15, 15, 7, 15))
     return resized_images
 
-# def extract_lines(image,path):
-#     output_dir = 'oneLine/' + path
-#     craft = Craft(output_dir=output_dir, crop_type="box", cuda=False)
-#     craft.detect_text(image)
-#     read_image(image)
+def extract_lines(image,path):
+    output_dir = 'oneLine/' + path
+    craft = Craft(output_dir=output_dir, crop_type="box", cuda=False,export_extra=False)
+    craft.detect_text(image)
 
 def one_line_extraction(images, filenames):
 
@@ -172,19 +173,19 @@ def DeSkewing(images,degree):
 if __name__ == "__main__":
     # Loading the Dataset and ground truth from the full path
     # Arabian Data Frame, Arabian Ground Truth
-    arabDF, arabGT , arabFileNames, gtFileNames = helpers.load_images_and_ground_truth(
-        "arab\\hundred",
-          "ground_truth\\arab_gt")
+    # arabDF, arabGT , arabFileNames, gtFileNames = helpers.load_images_and_ground_truth(
+    #     "arab\\hundred",
+    #       "ground_truth\\arab_gt")
     
-    filename = 'resizing.csv'
-    arabOCR = thresholding(arabDF)
+    # filename = 'resizing.csv'
+    # arabOCR = thresholding(arabDF)
     
-    print("__________________________")
-    arabOCR = psm6OCR(arabOCR)
-    print("__________________________")
-    original = []
-    for i in range(len(arabOCR)):
-        original.append(acc(arabOCR[i],arabGT[i]))
+    # print("__________________________")
+    # arabOCR = psm6OCR(arabOCR)
+    # print("__________________________")
+    # original = []
+    # for i in range(len(arabOCR)):
+    #     original.append(acc(arabOCR[i],arabGT[i]))
 
     # arabOCR = psm6OCR(arabDF[85:100])
 
@@ -204,7 +205,7 @@ if __name__ == "__main__":
     # # print("__________________________")
     # # arabOCR = one_line_OCR(arabDF[:5])
     
-    create_csv(filename, [arabFileNames,original])
+    # create_csv(filename, [arabFileNames,original])
 
     # results = Skewing(arabDF[55:57], 5)
     # # for i in range(len(results)):
@@ -220,7 +221,7 @@ if __name__ == "__main__":
     #     plt.show()
     # Lines Extractions can not be perfect without some preprocessing
     # soraa = greyscale(arabDF[:5])
-    # sora = one_line_extraction(arabDF[5:15],arabFileNames[5:15])
+    # sora = one_line_extraction(arabDF[16:18],arabFileNames[16:18])
     # print("__________________________")
     # # for i in range(5):
     # print(arabFileNames[0])
@@ -235,6 +236,11 @@ if __name__ == "__main__":
     # thresh, im_bw = cv2.threshold(sora, 0, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C+cv2.THRESH_OTSU)
     # extract_lines(sora)
 
-## Next : Search how to extend the csv file to include extra columns
-## 3ayz a3ml column gded w a3ml append lel csv file
-
+    images,ground_truth = LineToWord.load_lined_images("14766_1.tiff","14766.txt")
+    print("__________________________")
+    OCRResults = []
+    for i in range(len(images)):
+        word_images= LineToWord.line_to_word_image(images[i])
+        OCRResults.append(LineToWord.OCRING(word_images))
+    OCRResults = helpers.flatten(OCRResults)
+    print(LineToWord.acc(OCRResults,ground_truth[0]))

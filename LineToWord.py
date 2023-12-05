@@ -5,6 +5,9 @@ import Benchmark
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.signal import argrelextrema
+import pytesseract
+import nltk
+import helpers
 
 # To be Moved to cvOperation.py
 
@@ -47,21 +50,32 @@ def BB(cvImage) -> float:
 
 # To be Moved to cvOperation.py
 
-def load_images(imageFile):
-    folder = os.path.join("oneLine",imageFile,"image_crops")
-    image_files = natsort.natsorted(os.listdir(folder))
+def load_lined_images(imageFile,gtFile):
+    gt_folder = "arab_gt"
+    image_folder = os.path.join("oneLine",imageFile,"image_crops")
+    # ground_truth_folder = os.path.join("arab_gt",gtFile)
+    image_files = natsort.natsorted(os.listdir(image_folder))
+    ground_truth_files = natsort.natsorted(os.listdir(gt_folder))
     images=[]
+    ground_truth = []
     for i in range(len(image_files)):
-        image_path = os.path.join(folder,image_files[i])
+        image_path = os.path.join(image_folder,image_files[i])
         image = cv2.imread(image_path)
         images.append(image)
-    return images
+    for i in range(len(ground_truth_files)):
+        if(ground_truth_files[i] == "14766.txt"):
+            print("Found")
+            gt_path = os.path.join(gt_folder,ground_truth_files[i])
+            with open(gt_path, "r", encoding="utf8") as file:
+                    gt_text = file.read()
+                    ground_truth.append(gt_text)
+    return images,ground_truth
 
 def line_to_word_image(image):
     # gray_Image=greyScale(BB(image))
     img_row_sum = np.sum(BB(image),axis=0).tolist()
-    plt.plot(img_row_sum)
-    plt.show()
+    # plt.plot(img_row_sum)
+    # plt.show()
     img_row_sum1=np.convolve(img_row_sum,np.ones(1),mode='same')
     img_row_sum2=np.array(img_row_sum1)
     # print(img_row_sum2)
@@ -74,14 +88,46 @@ def line_to_word_image(image):
         # print(i,img_row_sum2[i],img_row_sum2[i+1])
         if (img_row_sum2[i]>img_row_sum2[i+1]):
             list.append(i)
-    print((list))
-    print(len(list))
-    # print(argrelextrema(img_row_sum2, np.less)[0].size)
-    # print(argrelextrema(img_row_sum2, np.less)[0])
-    plt.plot(img_row_sum2)
-    plt.show()
+    # plt.plot(img_row_sum2)
+    # plt.show()
     sub_image= image[:,0:list[0]]
-    cv2.imwrite("bignady/Test_" + str(len(list)) + ".jpg", sub_image)
+    word_images=[]
+    word_images.append(sub_image)
+    # cv2.imwrite("bignady/Test_" + str(len(list)) + ".jpg", sub_image)
     for i in range(len(list)-1):
         sub_image= image[:,list[i]:list[i+1]]
-        cv2.imwrite("bignady/Test_" + str(len(list)-1-i) + ".jpg", sub_image)
+        word_images.insert(0,sub_image)
+        # cv2.imwrite("bignady/Test_" + str(len(list)-1-i) + ".jpg", sub_image)
+    return word_images
+
+def tokenize_text(text):
+    return text.split()
+
+def OCRING(images):
+    OCRResults = []
+    for i in range(len(images)):
+        OCRResults.append(pytesseract.image_to_string(images[i], lang='ara',config='--psm 8'))
+    return OCRResults
+
+def acc(ocr_result,grt):
+    ocr_words = []
+    for i in range(len(ocr_result)):
+        ocr_words.append(tokenize_text(ocr_result[i].strip()))
+    # for i in range(len(grt)):
+    gt_words = tokenize_text(grt.strip())
+    ocr_words = helpers.flatten(ocr_words)
+    print(ocr_words)
+    print("Break")
+    ocr_words=' '.join(ocr_words)
+    print(ocr_words)
+    print("Break")
+    print(gt_words)
+    print("Break")
+    gt_words=" ".join(gt_words)
+    print(gt_words)
+    # Calculate the Levenshtein distance (edit distance) between the recognized words and ground truth words
+    distance = nltk.edit_distance(ocr_words, gt_words)
+    # Calculate WER by normalizing the distance by the number of words in ground truth
+    wer = distance / max(len(ocr_words), len(gt_words))
+    # Calculate accuracy as 1 - WER (lower WER is better, so higher accuracy)
+    return 1 - wer
