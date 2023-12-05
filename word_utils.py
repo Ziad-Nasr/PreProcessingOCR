@@ -12,13 +12,7 @@ import CV_operations as cvop
 
 def load_lined_images(root_folder,gt_folder):
     list_of_folders = natsort.natsorted(os.listdir(root_folder))
-    #['1189.tiff', '1485_1.tiff', '10023_1.tiff', '10490_1.tiff',
-    # '11157_1.tiff', '11464_1.tiff', '11647_1.tiff', '11761_1.tiff',
-    # '12476_1.tiff', '12482_1.tiff', '12866_1.tiff', '13203_1.tiff',
-    # '13278_1.tiff', '13756_1.tiff', '13766_1.tiff', '14176_1.tiff',
-    # '14730_1.tiff', '14766_1.tiff']
-    #
-    #
+
     all_images = []
     for i in range(len(list_of_folders)):
         image_folder = os.path.join(root_folder,list_of_folders[i],"image_crops")
