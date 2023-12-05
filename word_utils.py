@@ -10,25 +10,34 @@ import nltk
 import helpers
 import CV_operations as cvop
 
-def load_lined_images(imageFile,gtFile):
-    gt_folder = "arab_gt"
-    image_folder = os.path.join("oneLine",imageFile,"image_crops")
+def load_lined_images(root_folder,gt_folder):
+    list_of_folders = natsort.natsorted(os.listdir(root_folder))
+    #['1189.tiff', '1485_1.tiff', '10023_1.tiff', '10490_1.tiff',
+    # '11157_1.tiff', '11464_1.tiff', '11647_1.tiff', '11761_1.tiff',
+    # '12476_1.tiff', '12482_1.tiff', '12866_1.tiff', '13203_1.tiff',
+    # '13278_1.tiff', '13756_1.tiff', '13766_1.tiff', '14176_1.tiff',
+    # '14730_1.tiff', '14766_1.tiff']
+    #
+    #
+    all_images = []
+    for i in range(len(list_of_folders)):
+        image_folder = os.path.join(root_folder,list_of_folders[i],"image_crops")
+        image_files = natsort.natsorted(os.listdir(image_folder))
+        images=[]
+        ground_truth = []
+        for i in range(len(image_files)):
+            image_path = os.path.join(image_folder,image_files[i])
+            image = cv2.imread(image_path)
+            images.append(image)
+        all_images.append(images)
     # ground_truth_folder = os.path.join("arab_gt",gtFile)
-    image_files = natsort.natsorted(os.listdir(image_folder))
     ground_truth_files = natsort.natsorted(os.listdir(gt_folder))
-    images=[]
-    ground_truth = []
-    for i in range(len(image_files)):
-        image_path = os.path.join(image_folder,image_files[i])
-        image = cv2.imread(image_path)
-        images.append(image)
+    print("____________Fetching_GT______________")
     for i in range(len(ground_truth_files)):
-        if(ground_truth_files[i] == "14766.txt"):
-            print("Found")
-            gt_path = os.path.join(gt_folder,ground_truth_files[i])
-            with open(gt_path, "r", encoding="utf8") as file:
-                    gt_text = file.read()
-                    ground_truth.append(gt_text)
+        gt_path = os.path.join(gt_folder,ground_truth_files[i])
+        with open(gt_path, "r", encoding="utf8") as file:
+                gt_text = file.read()
+                ground_truth.append(gt_text)
     return images,ground_truth
 
 def line_to_word_image(image):
