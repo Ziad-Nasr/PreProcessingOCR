@@ -32,10 +32,9 @@ def load_lined_images(root_folder,gt_folder):
         with open(gt_path, "r", encoding="utf8") as file:
                 gt_text = file.read()
                 ground_truth.append(gt_text)
-    return images,ground_truth
+    return all_images,ground_truth
 
 def line_to_word_image(image):
-    # gray_Image=greyScale(BB(image))
     img_row_sum = np.sum(cvop.BB(image),axis=0).tolist()
     # plt.plot(img_row_sum)
     # plt.show()
