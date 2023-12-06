@@ -21,6 +21,8 @@ def thin_font(image):
     image = cv2.bitwise_not(image)
     return (image)
 
+
+
 def BB(cvImage) -> float:
     newImage = cvImage.copy()
     gray = cv2.cvtColor(newImage, cv2.COLOR_BGR2GRAY)
@@ -52,5 +54,7 @@ def halfOp(cvImage) -> float:
     # dilate = cv2.dilate(thresh, kernel, iterations=2)
     # cv2.imwrite("box1.jpg", (dilate))
     return noN
+
+
 
 # To be Moved to cvOperation.py

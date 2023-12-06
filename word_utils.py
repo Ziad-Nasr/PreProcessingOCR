@@ -93,10 +93,30 @@ def word_accuracy(ocr_result,grt):
 ################### Vertical Histogram ####################
 ###########################################################
 
+def resize(images):
+    # Define scale factor
+    scale_factor = 0.68
+    
+    resized_images=[]
+    for singleImage in range(len(images)):
+        height, width = images[singleImage].shape[:2]
+
+        # Calculate new dimensions
+        new_height = int(height * scale_factor)
+        new_width = int(width * scale_factor)
+        
+        # Resize image
+        resized_images.append(cv2.resize(images[singleImage], (new_width, new_height),interpolation=cv2.INTER_LINEAR))
+    
+    return resized_images
+
 def vertical_histogram(img):
     img = 255-img
-    gray_Image=cvop.BB(img)
-    img_row_sum11 = np.sum(gray_Image,axis=1).tolist()
+    gray_Image=cvop.greyScale(img)
+    dilate = cv2.dilate(gray_Image, cv2.getStructuringElement(cv2.MORPH_RECT, (50, 3)), iterations=9)
+    plt.imshow(dilate)
+    plt.show()
+    img_row_sum11 = np.sum(dilate,axis=1).tolist()
     # img_row_sum22=np.convolve(img_row_sum11,np.ones(20)/11,mode='same')
     img_row_sum33=np.array(img_row_sum11)
     # print(argrelextrema(img_row_sum33, np.greater))
