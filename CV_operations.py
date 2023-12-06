@@ -37,4 +37,20 @@ def BB(cvImage) -> float:
     cv2.imwrite("box1.jpg", (dilate))
     return dilate
 
+def halfOp(cvImage) -> float:
+    newImage = cvImage.copy()
+    gray = cv2.cvtColor(newImage, cv2.COLOR_BGR2GRAY)
+    blur = cv2.GaussianBlur(gray, (3, 3), 0)
+    thresh = cv2.threshold(blur, 0, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C + cv2.THRESH_OTSU)[1]
+    noN= noise_removal(thresh)
+    noN=thin_font(noN)
+    # Apply dilate to merge text into meaningful lines/paragraphs.
+    # Use larger kernel on X axis to merge characters into single line, cancelling out any spaces.
+    # But use smaller kernel on Y axis to separate between different blocks of text
+    # kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (25, 1))
+    # dilate = cv2.dilate(noN, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 60)), iterations=3)
+    # dilate = cv2.dilate(thresh, kernel, iterations=2)
+    # cv2.imwrite("box1.jpg", (dilate))
+    return noN
+
 # To be Moved to cvOperation.py

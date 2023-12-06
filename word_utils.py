@@ -32,9 +32,9 @@ def load_lined_images(root_folder,gt_folder):
         with open(gt_path, "r", encoding="utf8") as file:
                 gt_text = file.read()
                 ground_truth.append(gt_text)
-    return all_images,ground_truth
+    return all_images,ground_truth,list_of_folders,ground_truth_files
 
-def line_to_word_image(image):
+def line_to_word_image(image,PrePorcessedImage):
     img_row_sum = np.sum(cvop.BB(image),axis=0).tolist()
     # plt.plot(img_row_sum)
     # plt.show()
@@ -52,12 +52,14 @@ def line_to_word_image(image):
             list.append(i)
     # plt.plot(img_row_sum2)
     # plt.show()
-    sub_image= image[:,0:list[0]]
+    if len(list)==0:
+        return []
+    sub_image= PrePorcessedImage[:,0:list[0]]
     word_images=[]
     word_images.append(sub_image)
     # cv2.imwrite("bignady/Test_" + str(len(list)) + ".jpg", sub_image)
     for i in range(len(list)-1):
-        sub_image= image[:,list[i]:list[i+1]]
+        sub_image= PrePorcessedImage[:,list[i]:list[i+1]]
         word_images.insert(0,sub_image)
         # cv2.imwrite("bignady/Test_" + str(len(list)-1-i) + ".jpg", sub_image)
     return word_images
@@ -78,18 +80,27 @@ def word_accuracy(ocr_result,grt):
     # for i in range(len(grt)):
     gt_words = tokenize_text(grt.strip())
     ocr_words = helpers.flatten(ocr_words)
-    print(ocr_words)
-    print("Break")
     ocr_words=' '.join(ocr_words)
-    print(ocr_words)
-    print("Break")
-    print(gt_words)
-    print("Break")
-    gt_words=" ".join(gt_words)
-    print(gt_words)
+    gt_words=' '.join(gt_words)
     # Calculate the Levenshtein distance (edit distance) between the recognized words and ground truth words
     distance = nltk.edit_distance(ocr_words, gt_words)
     # Calculate WER by normalizing the distance by the number of words in ground truth
     wer = distance / max(len(ocr_words), len(gt_words))
     # Calculate accuracy as 1 - WER (lower WER is better, so higher accuracy)
     return 1 - wer
+
+###########################################################
+################### Vertical Histogram ####################
+###########################################################
+
+def vertical_histogram(img):
+    img = 255-img
+    gray_Image=cvop.BB(img)
+    img_row_sum11 = np.sum(gray_Image,axis=1).tolist()
+    # img_row_sum22=np.convolve(img_row_sum11,np.ones(20)/11,mode='same')
+    img_row_sum33=np.array(img_row_sum11)
+    # print(argrelextrema(img_row_sum33, np.greater))
+    img44=argrelextrema(img_row_sum33, np.greater)
+    print(img44[0].size)
+    plt.plot(img_row_sum33)
+    plt.show()
