@@ -95,10 +95,10 @@ def word_accuracy(ocr_result,grt):
 
 def resize(images):
     # Define scale factor
-    scale_factor = 0.68
     
     resized_images=[]
     for singleImage in range(len(images)):
+        scale_factor = 29.0 / images[singleImage].shape[0]
         height, width = images[singleImage].shape[:2]
 
         # Calculate new dimensions
@@ -110,17 +110,37 @@ def resize(images):
     
     return resized_images
 
-def vertical_histogram(img):
-    img = 255-img
-    gray_Image=cvop.greyScale(img)
-    dilate = cv2.dilate(gray_Image, cv2.getStructuringElement(cv2.MORPH_RECT, (50, 3)), iterations=9)
-    plt.imshow(dilate)
-    plt.show()
-    img_row_sum11 = np.sum(dilate,axis=1).tolist()
-    # img_row_sum22=np.convolve(img_row_sum11,np.ones(20)/11,mode='same')
-    img_row_sum33=np.array(img_row_sum11)
-    # print(argrelextrema(img_row_sum33, np.greater))
-    img44=argrelextrema(img_row_sum33, np.greater)
-    print(img44[0].size)
-    plt.plot(img_row_sum33)
-    plt.show()
+def vertical_histogram(imgs):
+    min_height_images=[]
+    for single_image in range(len(imgs)):
+        img = 255-imgs[single_image]
+        gray_Image = cvop.greyScale(img)
+        kernel_size = imgs[single_image].shape[0]/3
+        # print(int(kernel_size))
+        dilate = cv2.dilate(gray_Image, 
+        cv2.getStructuringElement(cv2.MORPH_RECT,
+                         (int(kernel_size), 3)), iterations=11)
+        img_row_sum11 = np.sum(dilate,axis=1).tolist()
+        # img_row_sum22=np.convolve(img_row_sum11,np.ones(20)/11,mode='same')
+        img_row_sum33=np.array(img_row_sum11)
+        # plt.imshow(dilate)
+        # plt.show()
+        img44=argrelextrema(img_row_sum33, np.greater)
+        img44=np.mean(img_row_sum33)
+        min_index = 0
+        for i in reversed(range(len(img_row_sum33)//2)):
+            if img_row_sum33[i]>img44:
+                min_index = i
+        max_index = len(img_row_sum33)-1
+        for i in range(len(img_row_sum33)//2,len(img_row_sum33)):
+            if img_row_sum33[i]>img44:
+                max_index = i
+        # print(min_index,max_index)
+        
+        sub_image= imgs[single_image][min_index:max_index,:]
+        # plt.imshow(imgs[single_image])
+        # plt.show()
+        # plt.imshow(sub_image)
+        # plt.show()
+        min_height_images.append(sub_image)
+    return min_height_images  

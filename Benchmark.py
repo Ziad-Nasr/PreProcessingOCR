@@ -6,7 +6,8 @@ import numpy as np
 import nltk
 import csv
 import helpers
-import LineToWord
+import word_utils
+import CV_operations
 # from craft_text_detector import (
 #     Craft, read_image, 
 #     load_craftnet_model, 
@@ -18,7 +19,6 @@ import LineToWord
 def acc(ocr_result, grt):
     ocr_words = nltk.word_tokenize(ocr_result.strip())
     gt_words = nltk.word_tokenize(grt.strip())
-    return ocr_words
 
     # Calculate the Levenshtein distance (edit distance) between the recognized words and ground truth words
     distance = nltk.edit_distance(ocr_words, gt_words)
@@ -58,22 +58,7 @@ def thresholding(images):
         greyscale=cv2.cvtColor(images[singleImageIdx], cv2.COLOR_BGR2GRAY)
         results.append(cv2.threshold(greyscale, 0, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C+ cv2.THRESH_OTSU)[1])
     return results
-def resize(images):
-    # Define scale factor
-    scale_factor = 0.7
-    
-    resized_images=[]
-    for singleImage in range(len(images)):
-        height, width = images[singleImage].shape[:2]
 
-        # Calculate new dimensions
-        new_height = int(height * scale_factor)
-        new_width = int(width * scale_factor)
-        
-        # Resize image
-        resized_images.append(cv2.resize(images[singleImage], (new_width, new_height),interpolation=cv2.INTER_LINEAR))
-    
-    return resized_images
 
 def noise_removal(images):
 
@@ -101,7 +86,8 @@ def create_csv(filename, data):
         print("__________________________")
 
         # write header
-        writer.writerow(["File Name", "Adaptive Thresholding"])
+        writer.writerow(["File Name", "Words OCRing"])
+
         for i in range(len(data[0])):
             writer.writerow([data[0][i], data[1][i]])
         file.close()
@@ -220,8 +206,8 @@ if __name__ == "__main__":
     #     plt.imshow(results[i])
     #     plt.show()
     # Lines Extractions can not be perfect without some preprocessing
-    # soraa = greyscale(arabDF[:5])
-    # sora = one_line_extraction(arabDF[16:18],arabFileNames[16:18])
+    # soraa = CV_operations.greyscale(arabDF[:5])
+    # sora = one_line_extraction(arabDF[50:100],arabFileNames[50:100])
     # print("__________________________")
     # # for i in range(5):
     # print(arabFileNames[0])
@@ -236,11 +222,14 @@ if __name__ == "__main__":
     # thresh, im_bw = cv2.threshold(sora, 0, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C+cv2.THRESH_OTSU)
     # extract_lines(sora)
 
-    images,ground_truth = LineToWord.load_lined_images("14766_1.tiff","14766.txt")
+    all_images,all_ground_truth, images_names, gt_names = word_utils.load_lined_images("oneLine","arab_gt")
     print("__________________________")
-    OCRResults = []
-    for i in range(len(images)):
-        word_images= LineToWord.line_to_word_image(images[i])
-        OCRResults.append(LineToWord.OCRING(word_images))
-    OCRResults = helpers.flatten(OCRResults)
-    print(LineToWord.acc(OCRResults,ground_truth[0]))
+    OCRResults_words = []
+    all_OCR_results = []
+    counter=0
+    word_images=word_utils.line_to_word_image(all_images[0][5],all_images[0][5])
+    plt.imshow(word_images[2])
+    plt.show()
+    image = word_utils.vertical_histogram(word_images[2])
+    plt.imshow(image)
+    plt.show()
