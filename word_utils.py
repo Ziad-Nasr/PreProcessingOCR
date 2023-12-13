@@ -98,7 +98,7 @@ def resize(images):
     
     resized_images=[]
     for singleImage in range(len(images)):
-        scale_factor = 29.0 / images[singleImage].shape[0]
+        scale_factor = 20.0 / images[singleImage].shape[0]
         height, width = images[singleImage].shape[:2]
 
         # Calculate new dimensions
